@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="OpenJPEG">
+      <UniqueIdentifier>{af07bcd5-6550-4d87-9ed9-8e637e0664bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DeleteNeed">
+      <UniqueIdentifier>{b35fc043-e401-4789-a19b-548268117d4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image">
+      <UniqueIdentifier>{da3ad47a-ef84-4549-a10c-0c5fef10db2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SubViewer">
+      <UniqueIdentifier>{7f3439e0-7c25-48e6-b80f-d27f15c3be81}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ProgressDisplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressDisplayDoc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressDisplayView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DecompressJPEG2000.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\color.h">
+      <Filter>OpenJPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\jp2\convert.h">
+      <Filter>OpenJPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\opj_getopt.h">
+      <Filter>OpenJPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\opj_string.h">
+      <Filter>OpenJPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="LRawFile.h">
+      <Filter>DeleteNeed</Filter>
+    </ClInclude>
+    <ClInclude Include="LProgressiveFile.h">
+      <Filter>DeleteNeed</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageConverter.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageInfo.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageViewer.h">
+      <Filter>SubViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutManager.h">
+      <Filter>SubViewer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ProgressDisplay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressDisplayDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressDisplayView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DecompressJPEG2000.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\common\color.c">
+      <Filter>OpenJPEG</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\jp2\convert.c">
+      <Filter>OpenJPEG</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\jp2\convertbmp.c">
+      <Filter>OpenJPEG</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\common\opj_getopt.c">
+      <Filter>OpenJPEG</Filter>
+    </ClCompile>
+    <ClCompile Include="LRawFile.cpp">
+      <Filter>DeleteNeed</Filter>
+    </ClCompile>
+    <ClCompile Include="LProgressiveFile.cpp">
+      <Filter>DeleteNeed</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageConverter.cpp">
+      <Filter>Image</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageViewer.cpp">
+      <Filter>SubViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="LayoutManager.cpp">
+      <Filter>SubViewer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ProgressDisplay.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="UserImages.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ProgressDisplayDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ProgressDisplay.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar256.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ProgressDisplay.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
