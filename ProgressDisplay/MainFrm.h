@@ -35,7 +35,7 @@ protected:  // control bar embedded members
 	CMFCToolBar       m_wndToolBar;
 	CMFCStatusBar     m_wndStatusBar;
 
-	BOOL m_bIsFirstPreview;
+	BOOL m_bIsShowCurrentPosition;
 
 // Generated message map functions
 protected:

@@ -25,6 +25,9 @@
     <Filter Include="SubViewer">
       <UniqueIdentifier>{7f3439e0-7c25-48e6-b80f-d27f15c3be81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DisplayUtill">
+      <UniqueIdentifier>{7d6dfcdb-f171-4e71-a8ca-ddc27f62b174}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -87,6 +90,12 @@
     <ClInclude Include="LayoutManager.h">
       <Filter>SubViewer</Filter>
     </ClInclude>
+    <ClInclude Include="MyPopupWnd.h">
+      <Filter>DisplayUtill</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelDataPopupWnd.h">
+      <Filter>DisplayUtill</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ProgressDisplay.cpp">
@@ -137,6 +146,12 @@
     <ClCompile Include="LayoutManager.cpp">
       <Filter>SubViewer</Filter>
     </ClCompile>
+    <ClCompile Include="MyPopupWnd.cpp">
+      <Filter>DisplayUtill</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelDataPopupWnd.cpp">
+      <Filter>DisplayUtill</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ProgressDisplay.rc">
@@ -162,6 +177,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ProgressDisplay.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\cursor_pan.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\cursor_pan_down.cur">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

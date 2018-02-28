@@ -64,6 +64,16 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR_PAN          CURSOR                  "res\\cursor_pan.cur"
+
+IDC_CURSOR_PAN_DOWN     CURSOR                  "res\\cursor_pan_down.cur"
+
 #endif    // Korean (Korea) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -170,6 +180,7 @@ BEGIN
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "&Preview first layer",        ID_VIEW_SEEFIRSTLAYER
+        MENUITEM "Show &Current Position",      ID_VIEW_SHOWCURRENTPOSITION, CHECKED
     END
     POPUP "&Help"
     BEGIN

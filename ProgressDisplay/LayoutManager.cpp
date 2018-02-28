@@ -136,6 +136,29 @@ void CLayoutManager::SetBorderThick(INT_PTR nThick)
 	m_nBorderThick = nThick;
 }
 
+void CLayoutManager::ManageCurrentPos(CPoint ptCurPos)
+{
+	if (GetImageViewerCount() <= 0)
+		return;
+
+	INT_PTR nClickIndex = GetImageViewerIndexFromPos(ptCurPos);
+
+	if (nClickIndex < 0)
+		return;
+
+	for (INT_PTR iView = 0; iView < GetImageViewerCount(); iView++)
+	{
+		if (iView == nClickIndex)
+		{
+			GetImageViewer(iView)->UpdateMousePosPixelData();
+		}
+		else
+		{
+			GetImageViewer(iView)->HideMosPosWnd();
+		}
+	}
+}
+
 void CLayoutManager::RecalcLayout()
 {
 	if (m_rtTotalCanvas.IsRectEmpty())

@@ -10,6 +10,8 @@ CMyPopupWnd::CMyPopupWnd()
 	m_crText = RGB(255, 255, 255);
 	m_strFontName = _T("Segoe UI");
 	m_fFontSize = 11.0f;
+
+	m_bIsHangOn = FALSE;
 }
 
 
@@ -31,12 +33,12 @@ BOOL CMyPopupWnd::CreateCtrl(CWnd* pParent)
 	return TRUE;
 }
 
-void CMyPopupWnd::ShowPopupMsg(BOOL bMakeCurMousePos)
+void CMyPopupWnd::ShowPopupMsg()
 {
 	if (m_strMessage.IsEmpty())
 		return;
 
-	if (bMakeCurMousePos)
+	if (m_bIsHangOn)
 	{
 		Gdiplus::SizeF size = MeasureString(m_strMessage);
 		//
@@ -45,10 +47,23 @@ void CMyPopupWnd::ShowPopupMsg(BOOL bMakeCurMousePos)
 		//
 		CSize sizeNew((int)size.Width, (int)size.Height);
 		//
-		CPoint ptCursor;
-		GetCursorPos(&ptCursor);
+		MoveWindow(m_ptHangOnPos.x, m_ptHangOnPos.y, sizeNew.cx, sizeNew.cy);
+	}
+	else
+	{
+		Gdiplus::SizeF size = MeasureString(m_strMessage);
 		//
-		MoveWindow(ptCursor.x, ptCursor.y, sizeNew.cx, sizeNew.cy);
+		size.Width += (size.Height * 2.0f) + 2.0f;
+		size.Height += 4.0f;
+		//
+		CSize sizeNew((int)size.Width, (int)size.Height);
+		//
+		CPoint ptCurPos;
+		GetCursorPos(&ptCurPos);
+		//
+		MoveWindow(ptCurPos.x, ptCurPos.y, sizeNew.cx, sizeNew.cy);
+
+		m_ptHangOnPos = ptCurPos;
 	}
 
 	if (!IsWindowVisible())
@@ -58,6 +73,17 @@ void CMyPopupWnd::ShowPopupMsg(BOOL bMakeCurMousePos)
 	//
 	Invalidate(FALSE);
 	UpdateWindow();
+}
+
+void CMyPopupWnd::HidePopupMsg()
+{
+	if (m_bIsHangOn == TRUE)
+		return;
+
+	if (IsWindowVisible())
+	{
+		ShowWindow(SW_HIDE);
+	}
 }
 
 void CMyPopupWnd::DrawPopupWnd(CDC* pDC)
@@ -158,6 +184,27 @@ void CMyPopupWnd::DrawPopupWnd(CDC* pDC)
 	}
 }
 
+void CMyPopupWnd::CompositeMsg()
+{
+
+}
+
+void CMyPopupWnd::SetParentRect(CRect rtParent)
+{
+	m_rtParent = rtParent;
+}
+
+void CMyPopupWnd::SetCanvasRect(CRect rtCanvas)
+{
+	m_rtCanvas = rtCanvas;
+}
+
+void CMyPopupWnd::SetImageRect(CRect rtImage)
+{
+	m_rtImage = rtImage;
+}
+
+
 void CMyPopupWnd::SetBkColor(COLORREF crBk)
 {
 	m_crBk = crBk;
@@ -181,6 +228,21 @@ void CMyPopupWnd::SetFontSize(float fFontSize)
 void CMyPopupWnd::SetMessage(CString strText)
 {
 	m_strMessage = strText;
+}
+
+void CMyPopupWnd::SetHangOn(BOOL bHangOn)
+{
+	m_bIsHangOn = bHangOn;
+}
+
+void CMyPopupWnd::SetCursorPos(CPoint ptCurPos)
+{
+	m_ptCurPos = ConvertScreen2ImageCoordinate(ptCurPos);
+}
+
+BOOL CMyPopupWnd::GetHangOn()
+{
+	return m_bIsHangOn;
 }
 
 BOOL CMyPopupWnd::SelectInvalidateRgn(CDC* pDC)
@@ -234,6 +296,8 @@ Gdiplus::SizeF CMyPopupWnd::MeasureString(CString strText)
 
 	Gdiplus::SizeF size(0.0f, 0.0f);
 	rcMeasure.GetSize(&size);
+
+	return size;
 }
 
 BEGIN_MESSAGE_MAP(CMyPopupWnd, CWnd)
@@ -269,4 +333,24 @@ void CMyPopupWnd::OnPaint()
 	SelectInvalidateRgn(&dc);
 
 	DrawPopupWnd(&dc);
+}
+
+Gdiplus::PointF CMyPopupWnd::ConvertScreen2ImageCoordinate(CPoint point)
+{
+	Gdiplus::PointF ptCanvas(point.x - m_rtCanvas.left, point.y - m_rtCanvas.top);
+	Gdiplus::PointF ptImage(0, 0);
+
+	CRect rtCanvasAbsolutCoord;
+	rtCanvasAbsolutCoord.left = 0;
+	rtCanvasAbsolutCoord.top = 0;
+	rtCanvasAbsolutCoord.right = rtCanvasAbsolutCoord.left + m_rtCanvas.Width();
+	rtCanvasAbsolutCoord.bottom = rtCanvasAbsolutCoord.top + m_rtCanvas.Height();
+
+	float fRatioX = (double)m_rtImage.Width() / (float)rtCanvasAbsolutCoord.Width();
+	float fRatioY = (double)m_rtImage.Height() / (float)rtCanvasAbsolutCoord.Height();
+	ptImage.X = (ptCanvas.X - rtCanvasAbsolutCoord.left)*fRatioX + m_rtImage.left;
+	ptImage.Y = (ptCanvas.Y - rtCanvasAbsolutCoord.top)*fRatioY + m_rtImage.top;
+
+	//
+	return ptImage;
 }

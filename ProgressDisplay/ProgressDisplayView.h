@@ -7,6 +7,10 @@
 #include "ImageInfo.h"
 #include "LayoutManager.h"
 
+#define MODE_NORMAL		0
+#define MODE_PAN		1
+#define MODE_PAN_DOWN	2
+
 struct DIBINFO : public BITMAPINFO
 {
 	RGBQUAD arColors[255];
@@ -57,6 +61,9 @@ protected:
 	HBITMAP m_hBitmap;
 
 	BOOL m_bIsFirstPreview;
+	BOOL m_bIsShowCurrentPosition;
+
+	INT_PTR m_nOperationMode;
 
 private:
 	BOOL bFlagIsDecompressing;
@@ -69,6 +76,7 @@ protected:
 	//
 	void OpenJpegFile(CStringArray* pFilePathArray);
 	void ChangeLayer(CString strFilePath, INT_PTR nLayer);
+	void SetOperationModeByKey(BOOL bShift, BOOL bCtrl, BOOL bAlt, BOOL bLeftDown, BOOL bRightDown);
 	DIBINFO* GetDibInfo();
 
 // Overrides
@@ -104,11 +112,16 @@ public:
 	
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnFileCloseallimages();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnViewSeefirstlayer();
 	afx_msg void OnUpdateViewSeefirstlayer(CCmdUI *pCmdUI);
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnViewShowCurrentPosition();
+	afx_msg void OnUpdateViewShowCurrentPosition(CCmdUI *pCmdUI);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };
 
 #ifndef _DEBUG  // debug version in ProgressDisplayView.cpp

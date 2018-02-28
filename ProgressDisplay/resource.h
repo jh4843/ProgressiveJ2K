@@ -16,16 +16,19 @@
 #define IDR_MAINFRAME_256               129
 #define IDR_ProgressDisplayTYPE         130
 #define IDS_EDIT_MENU                   306
+#define IDC_CURSOR_PAN                  310
+#define IDC_CURSOR_PAN_DOWN             311
 #define ID_VIEW_BMP                     32773
 #define ID_FILE_CLOSEALLIMAGES          32774
 #define ID_VIEW_SEEFIRSTLAYER           32775
+#define ID_VIEW_SHOWCURRENTPOSITION     32776
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32776
+#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_COMMAND_VALUE         32777
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

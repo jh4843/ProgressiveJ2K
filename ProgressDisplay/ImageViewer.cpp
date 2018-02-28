@@ -5,21 +5,28 @@
 
 #include "DecompressJPEG2000.h"
 
-
 CImageViewer::CImageViewer(INT_PTR nIndexViewer, HWND hWndView)
 {
 	Init();
 
 	m_nIndexViewer = nIndexViewer;
-	m_hWndView = hWndView;
+	m_hParentWnd = hWndView;
+
+	CWnd* pWnd = CWnd::FromHandle(m_hParentWnd);
+	m_pCursorWnd = new CPixelDataPopupWnd();
+	m_pCursorWnd->CreateCtrl(pWnd);
 
 	m_fDecodeTime = 0.0;
+	
 }
 
 
 CImageViewer::~CImageViewer()
 {
 	Init();
+
+	if (m_pCursorWnd)
+		delete m_pCursorWnd;
 }
 
 void CImageViewer::Init()
@@ -34,6 +41,12 @@ void CImageViewer::Init()
 
 	m_nCurrentLayerNum = 0;
 	m_nTotalLayerNum = 0;
+
+	m_dCanvasPerImageRatio = 1.0;
+	m_dZoomValue = 1.0;
+
+	m_ptPanDelta = CPoint(0, 0);
+	m_ptOldPointBeforePan = CPoint(0, 0);
 
 	m_rtCanvas.SetRectEmpty();
 	m_rtImage.SetRectEmpty();
@@ -76,6 +89,13 @@ void CImageViewer::SetDecodingTime(float fDecodeTime)
 	m_fDecodeTime = fDecodeTime;
 }
 
+
+
+void CImageViewer::SetOldMousePosBeforePan(CPoint ptOldPoint)
+{
+	m_ptOldPointBeforePan = ptOldPoint;
+}
+
 CString CImageViewer::GetCompressedFileName()
 {
 	return m_strCompressedFileName;
@@ -116,6 +136,23 @@ INT_PTR CImageViewer::GetCurrentLayer()
 	return m_nCurrentLayerNum;
 }
 
+CPoint CImageViewer::GetOldMousePointBeforePan()
+{
+	return m_ptOldPointBeforePan;
+}
+
+BOOL CImageViewer::IsPosPopupWndVisible()
+{
+	BOOL bRes = FALSE;
+	if (!m_pCursorWnd)
+		return FALSE;
+
+	if (m_pCursorWnd->IsWindowEnabled() && m_pCursorWnd->IsWindowVisible())
+		return TRUE;
+
+	return bRes;
+}
+
 BOOL CImageViewer::LoadImageFromStream()
 {
 	BOOL bRes = FALSE;
@@ -137,10 +174,10 @@ BOOL CImageViewer::LoadImageFromStream()
 
 void CImageViewer::UpdateViewer()
 {
-	if (m_hWndView == nullptr)
+	if (m_hParentWnd == nullptr)
 		return;
 
-	CWnd* pWnd = CWnd::FromHandle(m_hWndView);
+	CWnd* pWnd = CWnd::FromHandle(m_hParentWnd);
 
 	if (!pWnd)
 		return;
@@ -172,6 +209,102 @@ void CImageViewer::UpdateLayerNum()
 	strLayer.Format(_T("%d - %d"), m_nCurrentLayerNum, m_nTotalLayerNum);
 
 	pMainFrm->SetStatusBarText(3, strLayer);
+}
+
+void CImageViewer::UpdateMousePosPixelData()
+{
+	CPoint ptMousePos;
+
+	if (!m_pCursorWnd->GetHangOn())
+	{
+		::GetCursorPos(&ptMousePos);
+		::ScreenToClient(m_hParentWnd, &ptMousePos);
+		m_ptPixelDataPos = ptMousePos;
+	}
+	else
+	{
+		ptMousePos = m_ptPixelDataPos;
+	}
+
+	m_pCursorWnd->SetCursorPos(ptMousePos);
+	m_pCursorWnd->SetPixelData(GetPixelValueAtMousePos(ptMousePos));
+	m_pCursorWnd->CompositeMsg();
+	m_pCursorWnd->ShowPopupMsg();
+}
+
+void CImageViewer::OperatePan(CPoint point)
+{
+	CPoint ptDelta;
+	ptDelta = point - m_ptOldPointBeforePan;
+
+	ptDelta.x = (int)((double)ptDelta.x / m_dCanvasPerImageRatio*m_dZoomValue + 0.5);
+	ptDelta.y = (int)((double)ptDelta.y / m_dCanvasPerImageRatio*m_dZoomValue + 0.5);
+	m_ptPanDelta += ptDelta;
+
+	SetOldMousePosBeforePan(point);
+
+	CalcImageRect();
+	UpdateViewer();
+}
+
+void CImageViewer::ZoomIn(BOOL bIsDetail)
+{
+	double dRatio = 0.01;
+	
+	if (bIsDetail)
+		m_dZoomValue += dRatio * 5.0;	// 5%
+	else
+		m_dZoomValue += dRatio * 30.0;	// 30%
+	
+	if (m_dZoomValue < MIN_ZOOM_RATIO)
+	{
+		m_dZoomValue = MIN_ZOOM_RATIO;
+	}
+	else if (m_dZoomValue > MAX_ZOOM_RATIO)
+	{
+		m_dZoomValue = MAX_ZOOM_RATIO;
+	}
+
+	CalcImageRect();
+	UpdateViewer();
+}
+
+void CImageViewer::ZoomOut(BOOL bIsDetail)
+{
+	double dRatio = 0.01;
+
+	if (bIsDetail)
+		m_dZoomValue -= dRatio * 5.0;	// 5%
+	else
+		m_dZoomValue -= dRatio * 30.0;	// 30%
+
+	if (m_dZoomValue < MIN_ZOOM_RATIO)
+	{
+		m_dZoomValue = MIN_ZOOM_RATIO;
+	}
+	else if (m_dZoomValue > MAX_ZOOM_RATIO)
+	{
+		m_dZoomValue = MAX_ZOOM_RATIO;
+	}
+
+	CalcImageRect();
+	UpdateViewer();
+}
+
+void CImageViewer::ChangeMosPosWndHangOn()
+{
+	if (!m_pCursorWnd)
+		return;
+
+	m_pCursorWnd->SetHangOn(!m_pCursorWnd->GetHangOn());
+}
+
+void CImageViewer::HideMosPosWnd()
+{
+	if (!m_pCursorWnd)
+		return;
+
+	m_pCursorWnd->HidePopupMsg();
 }
 
 BOOL CImageViewer::AllocInImage()
@@ -271,6 +404,9 @@ void CImageViewer::CalcImageRect()
 			m_rtImage.top = 0;
 			m_rtImage.right = m_rtImage.left + (int)(dExtendedLength + 0.5f);
 			m_rtImage.bottom = (int)dImgHeight;
+
+			CalcZoomAndPan();
+			m_dCanvasPerImageRatio = dCanvasHeight / (float)m_rtImage.Height();
 		}
 		else
 		{
@@ -281,6 +417,9 @@ void CImageViewer::CalcImageRect()
 			m_rtImage.top = (int)(dImgHeight / 2) - (int)(dExtendedLength / 2);
 			m_rtImage.right = (int)dImgWidth;
 			m_rtImage.bottom = m_rtImage.top + (int)(dExtendedLength + 0.5f);
+
+			CalcZoomAndPan();
+			m_dCanvasPerImageRatio = dCanvasWidth / (float)m_rtImage.Width();
 		}
 	}
 	else
@@ -294,6 +433,9 @@ void CImageViewer::CalcImageRect()
 			m_rtImage.top = (int)(dImgHeight / 2) - (int)(dExtendedLength / 2);
 			m_rtImage.right = (int)dImgWidth;
 			m_rtImage.bottom = m_rtImage.top + (int)(dExtendedLength + 0.5f);
+
+			CalcZoomAndPan();
+			m_dCanvasPerImageRatio = dCanvasWidth / (float)m_rtImage.Width();
 		}
 		else
 		{
@@ -304,8 +446,53 @@ void CImageViewer::CalcImageRect()
 			m_rtImage.top = 0;
 			m_rtImage.right = m_rtImage.left + (int)(dExtendedLength + 0.5f);
 			m_rtImage.bottom = (int)dImgHeight;
+
+			CalcZoomAndPan();
+			m_dCanvasPerImageRatio = dCanvasHeight / (float)m_rtImage.Height();
 		}
 	}
+
+	if (m_pCursorWnd)
+	{
+		CWnd* pWnd = CWnd::FromHandle(m_hParentWnd);
+
+		CRect rtParent;
+		pWnd->GetClientRect(rtParent);
+
+		m_pCursorWnd->SetParentRect(rtParent);
+		m_pCursorWnd->SetCanvasRect(m_rtCanvas);
+		m_pCursorWnd->SetImageRect(m_rtImage);
+	}
+		
+}
+
+void CImageViewer::CalcZoomAndPan()
+{
+	// zoom
+	if (m_dZoomValue < MIN_ZOOM_RATIO)
+	{
+		m_dZoomValue = MIN_ZOOM_RATIO;
+	}
+	else if (m_dZoomValue > MAX_ZOOM_RATIO)
+	{
+		m_dZoomValue = MAX_ZOOM_RATIO;
+	}
+
+	//
+	CPoint ptCenter = CPoint((int)((m_rtImage.right + m_rtImage.left)*0.5f), (int)((m_rtImage.bottom + m_rtImage.top)*0.5f));
+	int nConst = (int)(m_rtImage.Width()*0.5f / m_dZoomValue);
+	int nConst1 = (int)(m_rtImage.Width() / m_dZoomValue);
+	m_rtImage.left = ptCenter.x - nConst;
+	m_rtImage.right = m_rtImage.left + nConst1;
+	nConst = (int)(m_rtImage.Height()*0.5f / m_dZoomValue);
+	nConst1 = (int)(m_rtImage.Height() / m_dZoomValue);
+	m_rtImage.top = ptCenter.y - nConst;
+	m_rtImage.bottom = m_rtImage.top + nConst1;
+
+	// panning
+	double dPannedDeltaX = -1 * (double)m_ptPanDelta.x / m_dZoomValue;
+	double dPannedDeltaY = (double)m_ptPanDelta.y / m_dZoomValue;
+	m_rtImage.OffsetRect((int)(dPannedDeltaX + 0.5f), (int)(dPannedDeltaY + 0.5f));
 }
 
 void CImageViewer::SetOutImageInfo()
@@ -326,4 +513,18 @@ void CImageViewer::SetOutImageInfo()
 
 	CalcImageRect();
 
+}
+
+COLORREF CImageViewer::GetPixelValueAtMousePos(CPoint ptPixelPos)
+{
+	CWnd* pWnd = CWnd::FromHandle(m_hParentWnd);
+
+	if (!pWnd)
+		return 0;
+
+	CDC *pDCc = pWnd->GetDC();
+
+	COLORREF color = pDCc->GetPixel(ptPixelPos);
+
+	return color;
 }

@@ -38,11 +38,16 @@ ON_WM_DROPFILES()
 ON_WM_CREATE()
 ON_WM_SIZE()
 ON_WM_KEYDOWN()
+ON_WM_MOUSEMOVE()
 ON_WM_LBUTTONDOWN()
+ON_WM_MOUSEWHEEL()
 ON_COMMAND(ID_FILE_CLOSEALLIMAGES, &CProgressDisplayView::OnFileCloseallimages)
+ON_WM_ERASEBKGND()
 ON_COMMAND(ID_VIEW_SEEFIRSTLAYER, &CProgressDisplayView::OnViewSeefirstlayer)
 ON_UPDATE_COMMAND_UI(ID_VIEW_SEEFIRSTLAYER, &CProgressDisplayView::OnUpdateViewSeefirstlayer)
-ON_WM_ERASEBKGND()
+ON_COMMAND(ID_VIEW_SHOWCURRENTPOSITION, &CProgressDisplayView::OnViewShowCurrentPosition)
+ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWCURRENTPOSITION, &CProgressDisplayView::OnUpdateViewShowCurrentPosition)
+ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 // CProgressDisplayView construction/destruction
@@ -52,8 +57,11 @@ CProgressDisplayView::CProgressDisplayView()
 	theApp.m_pProgView = this;
 	bFlagIsDecompressing = FALSE;
 	m_bIsFirstPreview = FALSE;
+	m_bIsShowCurrentPosition = TRUE;
 
 	m_nSelectedViewerIndex = -1;
+
+	m_nOperationMode = MODE_NORMAL;
 
 	m_hBitmap = NULL;
 
@@ -189,9 +197,42 @@ void CProgressDisplayView::ChangeLayer(CString strFilePath, INT_PTR nLayer)
 	pImageViewer->SetDecodingTime((float)(clockEnd - clockStart) / 1000);
 	pImageViewer->UpdateDecodingTime();
 	pImageViewer->UpdateLayerNum();
+	pImageViewer->UpdateMousePosPixelData();
 
 	delete pDecompJPEG2000;
 	bFlagIsDecompressing = FALSE;
+}
+
+void CProgressDisplayView::SetOperationModeByKey(BOOL bShift, BOOL bCtrl, BOOL bAlt, BOOL bLeftDown, BOOL bRightDown)
+{
+	switch (m_nOperationMode)
+	{
+	case MODE_NORMAL:
+		if (bCtrl)
+		{
+			m_nOperationMode = MODE_PAN;
+		}
+		break;
+	case MODE_PAN:
+		if (bLeftDown)
+		{
+			m_nOperationMode = MODE_PAN_DOWN;
+		}
+		break;
+	case MODE_PAN_DOWN:
+		if (bCtrl && bLeftDown)
+		{
+			m_nOperationMode = MODE_PAN_DOWN;
+		}
+		else
+		{
+			m_nOperationMode = MODE_NORMAL;
+		}
+		break;
+	default:
+		m_nOperationMode = MODE_NORMAL;
+		break;
+	}
 }
 
 void CProgressDisplayView::OnFilePrintPreview()
@@ -490,7 +531,7 @@ void CProgressDisplayView::OnSize(UINT nType, int cx, int cy)
 
 void CProgressDisplayView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	if (m_pLayoutManager->GetImageViewerCount() < 0)
+	if (m_pLayoutManager->GetImageViewerCount() <= 0)
 		return;
 
 	CImageViewer* pImageViewer = m_pLayoutManager->GetImageViewer(m_nSelectedViewerIndex);
@@ -515,14 +556,80 @@ void CProgressDisplayView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		ChangeLayer(pImageViewer->GetCompressedFileName(), ++nCurrentLayerNum);
 	}
+	
+	if (nChar == VK_CONTROL && m_nOperationMode != MODE_PAN_DOWN)
+	{
+		m_nOperationMode = MODE_PAN;
+		OnSetCursor(NULL, 0, 0);
+	}
 
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
+void CProgressDisplayView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	BOOL bIsShiftKeyPressed = (nFlags & MK_SHIFT) ? TRUE : FALSE;
+	BOOL bIsCtrlKeyPressed = (nFlags & MK_CONTROL) ? TRUE : FALSE;
+	BOOL bIsAltKeyPressed = (nFlags & MK_ALT) ? TRUE : FALSE;
+	BOOL bIsLButtonPressed = (nFlags & MK_LBUTTON) ? TRUE : FALSE;
+	BOOL bIsRButtonPressed = (nFlags & MK_RBUTTON) ? TRUE : FALSE;
+
+	SetOperationModeByKey(bIsShiftKeyPressed, bIsCtrlKeyPressed, bIsAltKeyPressed, bIsLButtonPressed, bIsRButtonPressed);
+	OnSetCursor(NULL, 0, 0);
+
+	if (!m_bIsShowCurrentPosition)
+		return;
+
+	if (!m_pLayoutManager)
+		return;
+
+
+
+	switch (m_nOperationMode)
+	{
+	case MODE_PAN:
+		break;
+	case MODE_PAN_DOWN:
+	{
+		INT_PTR nClickIndex = m_pLayoutManager->GetImageViewerIndexFromPos(point);
+
+		if (nClickIndex < 0)
+			break;
+
+		if (nClickIndex != m_nSelectedViewerIndex)
+			break;
+
+		CImageViewer* pImageViewer = m_pLayoutManager->GetImageViewer(nClickIndex);
+
+		if (!pImageViewer)
+			break;
+
+		pImageViewer->OperatePan(point);
+		break;
+	}
+
+	case MODE_NORMAL:
+	default:
+		m_pLayoutManager->ManageCurrentPos(point);
+		break;
+	}
+
+	CView::OnMouseMove(nFlags, point);
+}
 
 void CProgressDisplayView::OnLButtonDown(UINT nFlags, CPoint point)
 {
+	BOOL bIsShiftKeyPressed = (nFlags & MK_SHIFT) ? TRUE : FALSE;
+	BOOL bIsCtrlKeyPressed = (nFlags & MK_CONTROL) ? TRUE : FALSE;
+	BOOL bIsAltKeyPressed = (nFlags & MK_ALT) ? TRUE : FALSE;
+	BOOL bIsLButtonPressed = (nFlags & MK_LBUTTON) ? TRUE : FALSE;
+	BOOL bIsRButtonPressed = (nFlags & MK_RBUTTON) ? TRUE : FALSE;
+
+	SetOperationModeByKey(bIsShiftKeyPressed, bIsCtrlKeyPressed, bIsAltKeyPressed, bIsLButtonPressed, bIsRButtonPressed);
+
 	// TODO: Add your message handler code here and/or call default
+	if (!m_pLayoutManager)
+		return;
 
 	INT_PTR nClickIndex = m_pLayoutManager->GetImageViewerIndexFromPos(point);
 
@@ -533,15 +640,59 @@ void CProgressDisplayView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	m_nSelectedViewerIndex = nClickIndex;
 
-	m_pLayoutManager->GetImageViewer(nClickIndex)->UpdateCompFileName();
-	m_pLayoutManager->GetImageViewer(nClickIndex)->UpdateLayerNum();
-	m_pLayoutManager->GetImageViewer(nClickIndex)->UpdateDecodingTime();
+	CImageViewer* pImageViewer = m_pLayoutManager->GetImageViewer(nClickIndex);
+
+	pImageViewer->UpdateCompFileName();
+	pImageViewer->UpdateLayerNum();
+	pImageViewer->UpdateDecodingTime();
+
+	switch (m_nOperationMode)
+	{
+	case MODE_PAN:
+		break;
+	case MODE_PAN_DOWN:
+		pImageViewer->SetOldMousePosBeforePan(point);
+		break;
+	case MODE_NORMAL:
+	default:
+		pImageViewer->ChangeMosPosWndHangOn();
+		break;
+	}
+
+	m_pLayoutManager->RecalcLayout();
 
 	RedrawWindow();
 
 	CView::OnLButtonDown(nFlags, point);
 }
 
+BOOL CProgressDisplayView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	if (!m_pLayoutManager)
+		return CView::OnMouseWheel(nFlags, zDelta, pt);
+
+	if (m_pLayoutManager->GetImageViewerCount() <= 0)
+		return CView::OnMouseWheel(nFlags, zDelta, pt);
+
+	BOOL bIsCtrlKeyPressed = (nFlags & MK_CONTROL) ? TRUE : FALSE;
+	BOOL bIsAltKeyPressed = (nFlags & MK_ALT) ? TRUE : FALSE;
+
+	if (bIsCtrlKeyPressed)
+	{
+		CImageViewer* pImageViewer = m_pLayoutManager->GetImageViewer(m_nSelectedViewerIndex);
+
+		if (zDelta > 0)
+		{
+			pImageViewer->ZoomIn(bIsAltKeyPressed);
+		}
+		else if (zDelta < 0)
+		{
+			pImageViewer->ZoomOut(bIsAltKeyPressed);
+		}
+	}
+
+	return CView::OnMouseWheel(nFlags, zDelta, pt);
+}
 
 void CProgressDisplayView::OnFileCloseallimages()
 {
@@ -553,6 +704,13 @@ void CProgressDisplayView::OnFileCloseallimages()
 	// TODO: Add your command handler code here
 }
 
+BOOL CProgressDisplayView::OnEraseBkgnd(CDC* pDC)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	//return CView::OnEraseBkgnd(pDC);
+	return FALSE;
+}
 
 void CProgressDisplayView::OnViewSeefirstlayer()
 {
@@ -581,11 +739,45 @@ void CProgressDisplayView::OnUpdateViewSeefirstlayer(CCmdUI *pCmdUI)
 	}
 }
 
+void CProgressDisplayView::OnViewShowCurrentPosition()
+{
+	if (m_bIsShowCurrentPosition)
+	{
+		m_bIsShowCurrentPosition = FALSE;
+	}
+	else
+	{
+		m_bIsShowCurrentPosition = TRUE;
+	}
+}
 
-BOOL CProgressDisplayView::OnEraseBkgnd(CDC* pDC)
+void CProgressDisplayView::OnUpdateViewShowCurrentPosition(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+
+	if (m_bIsShowCurrentPosition)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+BOOL CProgressDisplayView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
 	// TODO: Add your message handler code here and/or call default
 
-	//return CView::OnEraseBkgnd(pDC);
-	return FALSE;
+	switch (m_nOperationMode)
+	{
+	case MODE_PAN:
+		SetCursor((HCURSOR)AfxGetApp()->LoadCursor(IDC_CURSOR_PAN));
+		return TRUE;
+	case MODE_PAN_DOWN:
+		SetCursor((HCURSOR)AfxGetApp()->LoadCursor(IDC_CURSOR_PAN_DOWN));
+		return TRUE;
+	}
+
+	return CView::OnSetCursor(pWnd, nHitTest, message);
 }

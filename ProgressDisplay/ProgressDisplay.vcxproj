@@ -204,6 +204,7 @@
     <ClInclude Include="..\include\common\opj_getopt.h" />
     <ClInclude Include="..\include\common\opj_string.h" />
     <ClInclude Include="..\include\jp2\convert.h" />
+    <ClInclude Include="PixelDataPopupWnd.h" />
     <ClInclude Include="DecompressJPEG2000.h" />
     <ClInclude Include="ImageConverter.h" />
     <ClInclude Include="ImageInfo.h" />
@@ -212,6 +213,7 @@
     <ClInclude Include="LProgressiveFile.h" />
     <ClInclude Include="LRawFile.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="MyPopupWnd.h" />
     <ClInclude Include="ProgressDisplay.h" />
     <ClInclude Include="ProgressDisplayDoc.h" />
     <ClInclude Include="ProgressDisplayView.h" />
@@ -237,6 +239,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PixelDataPopupWnd.cpp" />
     <ClCompile Include="DecompressJPEG2000.cpp" />
     <ClCompile Include="ImageConverter.cpp" />
     <ClCompile Include="ImageViewer.cpp" />
@@ -244,6 +247,7 @@
     <ClCompile Include="LProgressiveFile.cpp" />
     <ClCompile Include="LRawFile.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="MyPopupWnd.cpp" />
     <ClCompile Include="ProgressDisplay.cpp" />
     <ClCompile Include="ProgressDisplayDoc.cpp" />
     <ClCompile Include="ProgressDisplayView.cpp" />
@@ -266,6 +270,8 @@
     <Image Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\cursor_pan.cur" />
+    <None Include="res\cursor_pan_down.cur" />
     <None Include="res\ProgressDisplay.rc2" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -35,7 +35,6 @@ static UINT indicators[] =
 CMainFrame::CMainFrame()
 {
 	// TODO: add member initialization code here
-	m_bIsFirstPreview = FALSE;
 }
 
 CMainFrame::~CMainFrame()

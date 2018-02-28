@@ -30,6 +30,8 @@ public:
 	void SetImageViewerCanvas(INT_PTR nIndexImageViewer, CRect rtCanvas);
 	void SetBorderThick(INT_PTR nThick);
 
+	void ManageCurrentPos(CPoint ptCurPos);
+
 	void RecalcLayout();
 
 protected:
