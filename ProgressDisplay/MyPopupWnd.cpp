@@ -237,7 +237,7 @@ void CMyPopupWnd::SetHangOn(BOOL bHangOn)
 
 void CMyPopupWnd::SetCursorPos(CPoint ptCurPos)
 {
-	m_ptCurPos = ConvertScreen2ImageCoordinate(ptCurPos);
+	m_ptCurPos = ptCurPos;
 }
 
 BOOL CMyPopupWnd::GetHangOn()

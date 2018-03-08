@@ -15,7 +15,7 @@ protected:
 	COLORREF m_crText;
 	CString m_strFontName;
 	float m_fFontSize;
-	Gdiplus::PointF m_ptCurPos;
+	CPoint m_ptCurPos;
 	CPoint m_ptHangOnPos;
 
 	CRect m_rtParent;

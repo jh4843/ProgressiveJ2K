@@ -141,6 +141,23 @@ CPoint CImageViewer::GetOldMousePointBeforePan()
 	return m_ptOldPointBeforePan;
 }
 
+INT_PTR CImageViewer::GetImageValueAtPos(CPoint ptPos)
+{
+	if (!m_pOutImage)
+	{
+		return -1;
+	}
+
+	if (m_stOutImageInfo.nWidth == 0 || m_stOutImageInfo.nHeight == 0)
+	{
+		return -1;
+	}
+
+	INT_PTR nX = ptPos.x;
+	INT_PTR nY = ptPos.y;
+
+}
+
 BOOL CImageViewer::IsPosPopupWndVisible()
 {
 	BOOL bRes = FALSE;
@@ -226,7 +243,7 @@ void CImageViewer::UpdateMousePosPixelData()
 		ptMousePos = m_ptPixelDataPos;
 	}
 
-	m_pCursorWnd->SetCursorPos(ptMousePos);
+	m_pCursorWnd->SetCursorPos(ConvertScreen2ImageCoordinate(ptMousePos));
 	m_pCursorWnd->SetPixelData(GetPixelValueAtMousePos(ptMousePos));
 	m_pCursorWnd->CompositeMsg();
 	m_pCursorWnd->ShowPopupMsg();
@@ -527,4 +544,24 @@ COLORREF CImageViewer::GetPixelValueAtMousePos(CPoint ptPixelPos)
 	COLORREF color = pDCc->GetPixel(ptPixelPos);
 
 	return color;
+}
+
+CPoint CImageViewer::ConvertScreen2ImageCoordinate(CPoint point)
+{
+	CPoint ptCanvas = CPoint(point.x - m_rtCanvas.left, point.y - m_rtCanvas.top);
+	CPoint ptImage = CPoint(0, 0);
+
+	CRect rtCanvasAbsolutCoord;
+	rtCanvasAbsolutCoord.left = 0;
+	rtCanvasAbsolutCoord.top = 0;
+	rtCanvasAbsolutCoord.right = rtCanvasAbsolutCoord.left + m_rtCanvas.Width();
+	rtCanvasAbsolutCoord.bottom = rtCanvasAbsolutCoord.top + m_rtCanvas.Height();
+
+	float fRatioX = (double)m_rtImage.Width() / (float)rtCanvasAbsolutCoord.Width();
+	float fRatioY = (double)m_rtImage.Height() / (float)rtCanvasAbsolutCoord.Height();
+	ptImage.x = (ptCanvas.x - rtCanvasAbsolutCoord.left)*fRatioX + m_rtImage.left;
+	ptImage.y = (ptCanvas.y - rtCanvasAbsolutCoord.top)*fRatioY + m_rtImage.top;
+
+	//
+	return ptImage;
 }

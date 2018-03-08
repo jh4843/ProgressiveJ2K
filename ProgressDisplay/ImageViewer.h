@@ -65,6 +65,7 @@ public:
 	INT_PTR GetTotalLayer();
 	INT_PTR GetCurrentLayer();
 	CPoint GetOldMousePointBeforePan();
+	INT_PTR GetImageValueAtPos(CPoint ptPos);
 
 	BOOL IsPosPopupWndVisible();
 
@@ -98,5 +99,6 @@ protected:
 
 private:
 	COLORREF GetPixelValueAtMousePos(CPoint ptPixelPos);
+	CPoint ConvertScreen2ImageCoordinate(CPoint point);
 };
 
