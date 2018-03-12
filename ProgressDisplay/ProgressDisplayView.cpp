@@ -48,6 +48,9 @@ ON_UPDATE_COMMAND_UI(ID_VIEW_SEEFIRSTLAYER, &CProgressDisplayView::OnUpdateViewS
 ON_COMMAND(ID_VIEW_SHOWCURRENTPOSITION, &CProgressDisplayView::OnViewShowCurrentPosition)
 ON_UPDATE_COMMAND_UI(ID_VIEW_SHOWCURRENTPOSITION, &CProgressDisplayView::OnUpdateViewShowCurrentPosition)
 ON_WM_SETCURSOR()
+ON_WM_LBUTTONDBLCLK()
+ON_COMMAND(ID_OPERATION_VIEWEQUALPOSITION, &CProgressDisplayView::OnOperationViewequalposition)
+ON_WM_MOVE()
 END_MESSAGE_MAP()
 
 // CProgressDisplayView construction/destruction
@@ -197,7 +200,7 @@ void CProgressDisplayView::ChangeLayer(CString strFilePath, INT_PTR nLayer)
 	pImageViewer->SetDecodingTime((float)(clockEnd - clockStart) / 1000);
 	pImageViewer->UpdateDecodingTime();
 	pImageViewer->UpdateLayerNum();
-	pImageViewer->UpdateMousePosPixelData();
+	pImageViewer->UpdateCurMousePosPixelData();
 
 	delete pDecompJPEG2000;
 	bFlagIsDecompressing = FALSE;
@@ -638,6 +641,7 @@ void CProgressDisplayView::OnLButtonDown(UINT nFlags, CPoint point)
 		return;
 	}
 
+	INT_PTR nOldIndex = m_nSelectedViewerIndex;
 	m_nSelectedViewerIndex = nClickIndex;
 
 	CImageViewer* pImageViewer = m_pLayoutManager->GetImageViewer(nClickIndex);
@@ -655,7 +659,10 @@ void CProgressDisplayView::OnLButtonDown(UINT nFlags, CPoint point)
 		break;
 	case MODE_NORMAL:
 	default:
-		pImageViewer->ChangeMosPosWndHangOn();
+		if (nOldIndex == m_nSelectedViewerIndex)
+		{
+			pImageViewer->ChangeMosPosWndHangOn();
+		}
 		break;
 	}
 
@@ -780,4 +787,57 @@ BOOL CProgressDisplayView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	}
 
 	return CView::OnSetCursor(pWnd, nHitTest, message);
+}
+
+
+void CProgressDisplayView::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	if (!m_pLayoutManager)
+		return;
+
+	if (m_pLayoutManager->GetImageViewerCount() <= 0)
+		return;
+
+	if (m_nSelectedViewerIndex < 0)
+		return;
+
+	CImageViewer* pImageViewer = m_pLayoutManager->GetImageViewer(m_nSelectedViewerIndex);
+
+	pImageViewer->ResetZoom();
+	pImageViewer->ResetPan();
+	
+	m_pLayoutManager->RecalcLayout();
+
+	CView::OnLButtonDblClk(nFlags, point);
+}
+
+
+void CProgressDisplayView::OnOperationViewequalposition()
+{
+	if (!m_pLayoutManager)
+		return;
+
+	if (m_pLayoutManager->GetImageViewerCount() <= 0)
+		return;
+
+	if (m_nSelectedViewerIndex < 0)
+		return;
+
+	m_pLayoutManager->SetEqualImagePos(m_nSelectedViewerIndex);
+	// TODO: Add your command handler code here
+}
+
+
+void CProgressDisplayView::OnMove(int x, int y)
+{
+	CView::OnMove(x, y);
+
+	CRect rtCanvas;
+	GetClientRect(&rtCanvas);
+
+	m_pLayoutManager->SetTotalCanvasRect(rtCanvas);
+
+	// TODO: Add your message handler code here
 }

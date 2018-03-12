@@ -136,6 +136,23 @@ void CLayoutManager::SetBorderThick(INT_PTR nThick)
 	m_nBorderThick = nThick;
 }
 
+void CLayoutManager::SetEqualImagePos(INT_PTR nIndexStandardViewer)
+{
+	if (GetImageViewerCount() < 0)
+		return;
+
+	if (nIndexStandardViewer < 0)
+		return;
+
+	CPoint ptImagePos = GetImageViewer(nIndexStandardViewer)->GetCurImagePos();
+
+	for (INT_PTR nIndex = 0; nIndex < GetImageViewerCount(); nIndex++)
+	{
+		GetImageViewer(nIndex)->SetCurImagePos(ptImagePos);
+	}
+
+}
+
 void CLayoutManager::ManageCurrentPos(CPoint ptCurPos)
 {
 	if (GetImageViewerCount() <= 0)
@@ -150,7 +167,7 @@ void CLayoutManager::ManageCurrentPos(CPoint ptCurPos)
 	{
 		if (iView == nClickIndex)
 		{
-			GetImageViewer(iView)->UpdateMousePosPixelData();
+			GetImageViewer(iView)->UpdateCurMousePosPixelData();
 		}
 		else
 		{

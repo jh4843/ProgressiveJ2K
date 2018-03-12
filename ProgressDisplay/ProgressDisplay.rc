@@ -186,6 +186,10 @@ BEGIN
     BEGIN
         MENUITEM "&About ProgressDisplay...",   ID_APP_ABOUT
     END
+    POPUP "Operation"
+    BEGIN
+        MENUITEM "View &Equal Position",        ID_OPERATION_VIEWEQUALPOSITION
+    END
 END
 
 IDR_POPUP_EDIT MENU

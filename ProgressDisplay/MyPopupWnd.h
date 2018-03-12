@@ -15,7 +15,8 @@ protected:
 	COLORREF m_crText;
 	CString m_strFontName;
 	float m_fFontSize;
-	CPoint m_ptCurPos;
+	CPoint m_ptCurImagePos;
+	CPoint m_ptPopupPos;
 	CPoint m_ptHangOnPos;
 
 	CRect m_rtParent;
@@ -44,7 +45,8 @@ public:
 	void SetFontSize(float fFontSize);
 	void SetMessage(CString strText);
 	void SetHangOn(BOOL bHangOn);
-	void SetCursorPos(CPoint ptCurPos);
+	void SetCursorImagePos(CPoint ptCurPos);
+	void SetPopupPos(CPoint ptCurPos);
 
 	// Get
 	BOOL GetHangOn();

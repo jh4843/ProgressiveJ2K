@@ -29,6 +29,7 @@ public:
 	void SetTotalCanvasRect(CRect rtTotalCanvas);
 	void SetImageViewerCanvas(INT_PTR nIndexImageViewer, CRect rtCanvas);
 	void SetBorderThick(INT_PTR nThick);
+	void SetEqualImagePos(INT_PTR nIndexStandardViewer);
 
 	void ManageCurrentPos(CPoint ptCurPos);
 

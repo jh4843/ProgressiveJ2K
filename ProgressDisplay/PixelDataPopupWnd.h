@@ -7,10 +7,14 @@ public:
 	~CPixelDataPopupWnd();
 
 protected:
-	COLORREF m_clrValue;
+	COLORREF m_clrDisplayPixelValue;
+	BYTE m_bOutImagePixelValue;
+	WORD m_wInImagePixelValue;
 
 public:
-	void SetPixelData(COLORREF clrPixelData);
+	void SetDisplayPixelData(COLORREF clrPixelData);
+	void SetOutImagePixelData(BYTE dImagePixelValue);
+	void SetInImagePixelData(WORD dImagePixelValue);
 	// override
 public:
 	virtual void CompositeMsg();

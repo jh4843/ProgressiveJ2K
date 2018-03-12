@@ -17,7 +17,6 @@ CImageViewer::CImageViewer(INT_PTR nIndexViewer, HWND hWndView)
 	m_pCursorWnd->CreateCtrl(pWnd);
 
 	m_fDecodeTime = 0.0;
-	
 }
 
 
@@ -82,6 +81,7 @@ void CImageViewer::SetCanvas(CRect rtCanvas)
 	m_rtCanvas = rtCanvas;
 
 	CalcImageRect();
+	
 }
 
 void CImageViewer::SetDecodingTime(float fDecodeTime)
@@ -89,7 +89,13 @@ void CImageViewer::SetDecodingTime(float fDecodeTime)
 	m_fDecodeTime = fDecodeTime;
 }
 
+void CImageViewer::SetCurImagePos(CPoint ptImgPos)
+{
+	m_ptPixelDataPos = ptImgPos;
+	m_pCursorWnd->SetHangOn(TRUE);
 
+	UpdateViewer();
+}
 
 void CImageViewer::SetOldMousePosBeforePan(CPoint ptOldPoint)
 {
@@ -141,21 +147,80 @@ CPoint CImageViewer::GetOldMousePointBeforePan()
 	return m_ptOldPointBeforePan;
 }
 
-INT_PTR CImageViewer::GetImageValueAtPos(CPoint ptPos)
+CPoint CImageViewer::GetCurImagePos()
 {
+	return m_ptPixelDataPos;
+}
+
+BYTE CImageViewer::GetOutImagePixelValue(CPoint ptImagePos)
+{
+	if (m_stOutImageInfo.nWidth == 0 ||
+		m_stOutImageInfo.nHeight == 0)
+		return -1;
+
 	if (!m_pOutImage)
-	{
 		return -1;
+
+	INT_PTR nRow = m_stOutImageInfo.nHeight - ptImagePos.y;
+	INT_PTR nCol = ptImagePos.x;
+
+	if (nRow < 0 || nCol < 0)
+		return -1;
+
+	if (nRow >= m_stOutImageInfo.nHeight || nCol >= m_stOutImageInfo.nWidth)
+		return -1;
+
+	BYTE bRes;
+	memset(&bRes, 0, sizeof(BYTE));
+
+	BYTE* pByte = (BYTE*)m_pOutImage;
+	pByte += nRow*m_stOutImageInfo.nWidth + nCol;
+	bRes = (BYTE)*pByte;
+
+	return bRes;
+}
+
+WORD CImageViewer::GetInImagePixelValue(CPoint ptImagePos)
+{
+	WORD wRes;
+	memset(&wRes, 0, sizeof(WORD));
+
+	if (m_stInImageInfo.nWidth == 0 ||
+		m_stInImageInfo.nHeight == 0)
+		return -1;
+
+	if (!m_pInImage)
+		return -1;
+
+	INT_PTR nRow = m_stInImageInfo.nHeight - ptImagePos.y;
+	INT_PTR nCol = ptImagePos.x;
+
+	if (nRow < 0 || nCol < 0)
+		return -1;
+
+	if (nRow >= m_stInImageInfo.nHeight || nCol >= m_stInImageInfo.nWidth)
+		return -1;
+
+	BYTE* pByte = nullptr;
+	WORD* pWord = nullptr;
+
+	switch (m_stInImageInfo.nTotalAllocBytesPerPixel)
+	{
+	case 1:
+		pByte = (BYTE*)m_pInImage;
+		pByte += nRow*m_stInImageInfo.nWidth + nCol;
+		wRes = (BYTE)*pByte;
+		break;
+	case 2:
+		pWord = (WORD*)m_pInImage;
+		pWord += nRow*m_stInImageInfo.nWidth + nCol;
+		wRes = (WORD)*pWord;
+		break;
+	default:
+		break;
 	}
 
-	if (m_stOutImageInfo.nWidth == 0 || m_stOutImageInfo.nHeight == 0)
-	{
-		return -1;
-	}
-
-	INT_PTR nX = ptPos.x;
-	INT_PTR nY = ptPos.y;
-
+	return wRes;
 }
 
 BOOL CImageViewer::IsPosPopupWndVisible()
@@ -184,7 +249,7 @@ BOOL CImageViewer::LoadImageFromStream()
 
 	imageConverter.AdjustImage(m_pInImage, m_pOutImage, 0);
 
-	FreeInImage();
+	//FreeInImage();	// To Display Original Image Value
 
 	return bRes;
 }
@@ -193,6 +258,8 @@ void CImageViewer::UpdateViewer()
 {
 	if (m_hParentWnd == nullptr)
 		return;
+
+	UpdateCurMousePosPixelData();
 
 	CWnd* pWnd = CWnd::FromHandle(m_hParentWnd);
 
@@ -228,25 +295,69 @@ void CImageViewer::UpdateLayerNum()
 	pMainFrm->SetStatusBarText(3, strLayer);
 }
 
-void CImageViewer::UpdateMousePosPixelData()
+void CImageViewer::UpdateCurMousePosPixelData()
 {
-	CPoint ptMousePos;
+	CPoint ptClientPos;
+	CPoint ptScreenPos;
 
 	if (!m_pCursorWnd->GetHangOn())
 	{
-		::GetCursorPos(&ptMousePos);
-		::ScreenToClient(m_hParentWnd, &ptMousePos);
-		m_ptPixelDataPos = ptMousePos;
+		::GetCursorPos(&ptClientPos);
+		::ScreenToClient(m_hParentWnd, &ptClientPos);
+		m_ptPixelDataPos = ConvertScreen2ImageCoordinate(ptClientPos);
 	}
 	else
 	{
-		ptMousePos = m_ptPixelDataPos;
+		ptClientPos = ConvertImage2ScreenCoordinate(m_ptPixelDataPos);
 	}
 
-	m_pCursorWnd->SetCursorPos(ConvertScreen2ImageCoordinate(ptMousePos));
-	m_pCursorWnd->SetPixelData(GetPixelValueAtMousePos(ptMousePos));
+	if (!m_rtCanvas.PtInRect(ptClientPos))
+	{
+		m_pCursorWnd->HidePopupMsg();
+		return;
+	}
+
+	ptScreenPos = ptClientPos;
+	::ClientToScreen(m_hParentWnd, &ptScreenPos);
+
+	m_pCursorWnd->SetCursorImagePos(m_ptPixelDataPos);
+	m_pCursorWnd->SetPopupPos(ptScreenPos);
+	m_pCursorWnd->SetOutImagePixelData(GetOutImagePixelValue(m_ptPixelDataPos));
+	m_pCursorWnd->SetInImagePixelData(GetInImagePixelValue(m_ptPixelDataPos));
+	m_pCursorWnd->SetDisplayPixelData(GetPixelValueAtMousePos(ptClientPos));
 	m_pCursorWnd->CompositeMsg();
 	m_pCursorWnd->ShowPopupMsg();
+}
+
+void CImageViewer::UpdateHangOnPopupWndPos(CRect rtBeforeCanvas)
+{
+	if (!IsPosPopupWndVisible())
+		return;
+
+	if (!m_pCursorWnd->GetHangOn())
+		return;
+
+	double dWidthRatio = m_rtCanvas.Width() / rtBeforeCanvas.Width();
+	double dHeightRatio = m_rtCanvas.Height() / rtBeforeCanvas.Height();
+
+	m_ptPixelDataPos.x = m_ptPixelDataPos.x * dWidthRatio;
+	m_ptPixelDataPos.y = m_ptPixelDataPos.y * dHeightRatio;
+
+	m_pCursorWnd->SetCursorImagePos(ConvertScreen2ImageCoordinate(m_ptPixelDataPos));
+	m_pCursorWnd->SetDisplayPixelData(GetPixelValueAtMousePos(m_ptPixelDataPos));
+	m_pCursorWnd->CompositeMsg();
+	m_pCursorWnd->ShowPopupMsg();
+}
+
+void CImageViewer::ResetPan()
+{
+	m_ptOldPointBeforePan = CPoint(0, 0);
+	m_ptPanDelta = CPoint(0, 0);
+}
+
+void CImageViewer::ResetZoom()
+{
+	m_dZoomValue = 1.0;
 }
 
 void CImageViewer::OperatePan(CPoint point)
@@ -262,6 +373,7 @@ void CImageViewer::OperatePan(CPoint point)
 
 	CalcImageRect();
 	UpdateViewer();
+	
 }
 
 void CImageViewer::ZoomIn(BOOL bIsDetail)
@@ -271,7 +383,7 @@ void CImageViewer::ZoomIn(BOOL bIsDetail)
 	if (bIsDetail)
 		m_dZoomValue += dRatio * 5.0;	// 5%
 	else
-		m_dZoomValue += dRatio * 30.0;	// 30%
+		m_dZoomValue += dRatio * 100.0;	// 100%
 	
 	if (m_dZoomValue < MIN_ZOOM_RATIO)
 	{
@@ -321,6 +433,9 @@ void CImageViewer::HideMosPosWnd()
 	if (!m_pCursorWnd)
 		return;
 
+	if (m_pCursorWnd->GetHangOn())
+		return;
+
 	m_pCursorWnd->HidePopupMsg();
 }
 
@@ -345,6 +460,8 @@ BOOL CImageViewer::AllocInImage()
 
 BOOL CImageViewer::AllocOutImage()
 {
+	FreeOutImage();
+
 	int nAllocMemSize = m_stOutImageInfo.nWidth * m_stOutImageInfo.nHeight * m_stOutImageInfo.nTotalAllocBytesPerPixel;
 	m_pOutImage = (BYTE*)::VirtualAlloc(NULL, nAllocMemSize, MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_READWRITE);
 	if (!m_pOutImage)
@@ -551,17 +668,32 @@ CPoint CImageViewer::ConvertScreen2ImageCoordinate(CPoint point)
 	CPoint ptCanvas = CPoint(point.x - m_rtCanvas.left, point.y - m_rtCanvas.top);
 	CPoint ptImage = CPoint(0, 0);
 
-	CRect rtCanvasAbsolutCoord;
-	rtCanvasAbsolutCoord.left = 0;
-	rtCanvasAbsolutCoord.top = 0;
-	rtCanvasAbsolutCoord.right = rtCanvasAbsolutCoord.left + m_rtCanvas.Width();
-	rtCanvasAbsolutCoord.bottom = rtCanvasAbsolutCoord.top + m_rtCanvas.Height();
+	CRect rtClient;
+	rtClient.left = 0;
+	rtClient.top = 0;
+	rtClient.right = rtClient.left + m_rtCanvas.Width();
+	rtClient.bottom = rtClient.top + m_rtCanvas.Height();
 
-	float fRatioX = (double)m_rtImage.Width() / (float)rtCanvasAbsolutCoord.Width();
-	float fRatioY = (double)m_rtImage.Height() / (float)rtCanvasAbsolutCoord.Height();
-	ptImage.x = (ptCanvas.x - rtCanvasAbsolutCoord.left)*fRatioX + m_rtImage.left;
-	ptImage.y = (ptCanvas.y - rtCanvasAbsolutCoord.top)*fRatioY + m_rtImage.top;
+	float fRatioX = (double)m_rtImage.Width() / (float)rtClient.Width();
+	float fRatioY = (double)m_rtImage.Height() / (float)rtClient.Height();
+	ptImage.x = (ptCanvas.x - rtClient.left)*fRatioX + m_rtImage.left;
+	ptImage.y = m_rtImage.Height() - (ptCanvas.y - rtClient.top)*fRatioY + m_rtImage.top;
 
 	//
 	return ptImage;
+}
+
+CPoint CImageViewer::ConvertImage2ScreenCoordinate(CPoint ptImage)
+{
+	CPoint ptCanvas = CPoint(0,0);
+
+	//
+	float fRatioX = (double)m_rtCanvas.Width() / (float)m_rtImage.Width();
+	float fRatioY = (double)m_rtCanvas.Height() / (float)m_rtImage.Height();
+	ptCanvas.x = (ptImage.x - m_rtImage.left)*fRatioX + m_rtCanvas.left;
+	ptCanvas.y = m_rtCanvas.Height() - (ptImage.y - m_rtImage.top)*fRatioY + m_rtCanvas.top;
+	//ptCanvas.y = (ptImage.y - m_rtImage.top)*fRatioY + m_rtCanvas.top;
+
+	//
+	return ptCanvas;
 }

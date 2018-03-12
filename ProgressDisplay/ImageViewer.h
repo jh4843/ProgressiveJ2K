@@ -54,6 +54,7 @@ public:
 	void SetCanvas(CRect rtCanvas);
 	void SetDecodingTime(float fDecodeTime);
 	void SetOldMousePosBeforePan(CPoint ptOldPoint);
+	void SetCurImagePos(CPoint ptImgPos);
 
 	// Get
 	CString GetCompressedFileName();
@@ -65,7 +66,9 @@ public:
 	INT_PTR GetTotalLayer();
 	INT_PTR GetCurrentLayer();
 	CPoint GetOldMousePointBeforePan();
-	INT_PTR GetImageValueAtPos(CPoint ptPos);
+	CPoint GetCurImagePos();
+	BYTE GetOutImagePixelValue(CPoint ptImagePos);
+	WORD GetInImagePixelValue(CPoint ptImagePos);
 
 	BOOL IsPosPopupWndVisible();
 
@@ -74,7 +77,11 @@ public:
 	void UpdateCompFileName();
 	void UpdateDecodingTime();
 	void UpdateLayerNum();
-	void UpdateMousePosPixelData();
+	void UpdateCurMousePosPixelData();
+	void UpdateHangOnPopupWndPos(CRect rtBeforeCanvas);
+
+	void ResetPan();
+	void ResetZoom();
 
 	void OperatePan(CPoint point);
 
@@ -99,6 +106,8 @@ protected:
 
 private:
 	COLORREF GetPixelValueAtMousePos(CPoint ptPixelPos);
-	CPoint ConvertScreen2ImageCoordinate(CPoint point);
+
+	CPoint ConvertScreen2ImageCoordinate(CPoint ptScreen);
+	CPoint ConvertImage2ScreenCoordinate(CPoint ptImage);
 };
 

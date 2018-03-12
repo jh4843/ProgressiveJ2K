@@ -11,6 +11,9 @@ CMyPopupWnd::CMyPopupWnd()
 	m_strFontName = _T("Segoe UI");
 	m_fFontSize = 11.0f;
 
+	m_ptPopupPos = CPoint(0, 0);
+	m_ptCurImagePos = CPoint(0, 0);
+
 	m_bIsHangOn = FALSE;
 }
 
@@ -25,7 +28,7 @@ BOOL CMyPopupWnd::CreateCtrl(CWnd* pParent)
 	strClassName = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, NULL, (HBRUSH)GetStockObject(NULL_BRUSH), NULL);
 
 	// No Activate and Top Most
-	if (!CWnd::CreateEx(WS_EX_NOACTIVATE | WS_EX_TOPMOST | WS_EX_LAYERED, strClassName, NULL, WS_POPUP | WS_VISIBLE, CRect(0, 0, 0, 0), pParent/*this*/, 0, NULL))
+	if (!CWnd::CreateEx(WS_EX_NOACTIVATE | WS_EX_LAYERED, strClassName, NULL, WS_POPUP | WS_VISIBLE, CRect(0, 0, 0, 0), pParent/*this*/, 0, NULL))
 		return FALSE;
 
 	m_pNotifyWnd = pParent;
@@ -38,33 +41,14 @@ void CMyPopupWnd::ShowPopupMsg()
 	if (m_strMessage.IsEmpty())
 		return;
 
-	if (m_bIsHangOn)
-	{
-		Gdiplus::SizeF size = MeasureString(m_strMessage);
-		//
-		size.Width += (size.Height * 2.0f) + 2.0f;
-		size.Height += 4.0f;
-		//
-		CSize sizeNew((int)size.Width, (int)size.Height);
-		//
-		MoveWindow(m_ptHangOnPos.x, m_ptHangOnPos.y, sizeNew.cx, sizeNew.cy);
-	}
-	else
-	{
-		Gdiplus::SizeF size = MeasureString(m_strMessage);
-		//
-		size.Width += (size.Height * 2.0f) + 2.0f;
-		size.Height += 4.0f;
-		//
-		CSize sizeNew((int)size.Width, (int)size.Height);
-		//
-		CPoint ptCurPos;
-		GetCursorPos(&ptCurPos);
-		//
-		MoveWindow(ptCurPos.x, ptCurPos.y, sizeNew.cx, sizeNew.cy);
-
-		m_ptHangOnPos = ptCurPos;
-	}
+	Gdiplus::SizeF size = MeasureString(m_strMessage);
+	//
+	size.Width += (size.Height * 2.0f) + 2.0f;
+	size.Height += 4.0f;
+	//
+	CSize sizeNew((int)size.Width, (int)size.Height);
+	//
+	MoveWindow(m_ptPopupPos.x-2, m_ptPopupPos.y-2, sizeNew.cx+2, sizeNew.cy+2);
 
 	if (!IsWindowVisible())
 	{
@@ -77,8 +61,8 @@ void CMyPopupWnd::ShowPopupMsg()
 
 void CMyPopupWnd::HidePopupMsg()
 {
-	if (m_bIsHangOn == TRUE)
-		return;
+// 	if (m_bIsHangOn == TRUE)
+// 		return;
 
 	if (IsWindowVisible())
 	{
@@ -126,6 +110,15 @@ void CMyPopupWnd::DrawPopupWnd(CDC* pDC)
 
 	graphics.DrawLine(&pen, ptStart, ptEnd);
 
+	Gdiplus::Color crRed(200, GetRValue(200), GetGValue(0), GetBValue(0));
+	if (m_bIsHangOn)
+	{
+		crRed.SetFromCOLORREF(RGB(0, 200, 100));
+	}
+
+	Gdiplus::Pen penRect(crRed, 1);
+
+	graphics.DrawRectangle(&penRect, 0, 0, 3, 3);
 	//
 	//
 	Gdiplus::StringFormat strFormat = Gdiplus::StringFormat::GenericTypographic();
@@ -235,9 +228,14 @@ void CMyPopupWnd::SetHangOn(BOOL bHangOn)
 	m_bIsHangOn = bHangOn;
 }
 
-void CMyPopupWnd::SetCursorPos(CPoint ptCurPos)
+void CMyPopupWnd::SetCursorImagePos(CPoint ptCurPos)
 {
-	m_ptCurPos = ptCurPos;
+	m_ptCurImagePos = ptCurPos;
+}
+
+void CMyPopupWnd::SetPopupPos(CPoint ptCurPos)
+{
+	m_ptPopupPos = ptCurPos;
 }
 
 BOOL CMyPopupWnd::GetHangOn()

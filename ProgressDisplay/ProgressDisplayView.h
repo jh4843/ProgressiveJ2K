@@ -122,6 +122,9 @@ public:
 	afx_msg void OnViewShowCurrentPosition();
 	afx_msg void OnUpdateViewShowCurrentPosition(CCmdUI *pCmdUI);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnOperationViewequalposition();
+	afx_msg void OnMove(int x, int y);
 };
 
 #ifndef _DEBUG  // debug version in ProgressDisplayView.cpp
