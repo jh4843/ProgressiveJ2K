@@ -176,6 +176,17 @@ void CLayoutManager::ManageCurrentPos(CPoint ptCurPos)
 	}
 }
 
+void CLayoutManager::DestroyCurrentPosWnd()
+{
+	if (GetImageViewerCount() <= 0)
+		return;
+
+	for (INT_PTR iView = 0; iView < GetImageViewerCount(); iView++)
+	{
+		GetImageViewer(iView)->HideMosPosWnd();
+	}
+}
+
 void CLayoutManager::RecalcLayout()
 {
 	if (m_rtTotalCanvas.IsRectEmpty())
@@ -220,10 +231,8 @@ void CLayoutManager::RecalcLayout()
 		rtViewer.top = lRowPos;
 		rtViewer.bottom = lRowPos + lViewerHeight;
 		
-		if (iViewer < nImageViewerCount)
-		{
-			SetImageViewerCanvas(iViewer, rtViewer);
-		}
+		SetImageViewerCanvas(iViewer, rtViewer);
+		GetImageViewer(iViewer)->UpdateCurMousePosPixelData();
 
 		iCol++;
 

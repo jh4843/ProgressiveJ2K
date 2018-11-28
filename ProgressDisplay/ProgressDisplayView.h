@@ -71,6 +71,7 @@ private:
 // Operations
 public:
 	BOOL IsJpeg2000Format(CString strFileName);
+	void RedrawWnd();
 
 protected:
 	//
@@ -78,6 +79,9 @@ protected:
 	void ChangeLayer(CString strFilePath, INT_PTR nLayer);
 	void SetOperationModeByKey(BOOL bShift, BOOL bCtrl, BOOL bAlt, BOOL bLeftDown, BOOL bRightDown);
 	DIBINFO* GetDibInfo();
+
+private:
+	void DrawZoomInfo(CDC* pDC, INT_PTR nViewerIndex);
 
 // Overrides
 public:

@@ -6,7 +6,7 @@
 
 CDecompressJPEG2000::CDecompressJPEG2000()
 {
-	m_strInFileName.Empty();
+	m_strInputCompressedFileName.Empty();
 	m_pImageView = NULL;
 }
 
@@ -16,7 +16,7 @@ CDecompressJPEG2000::~CDecompressJPEG2000()
 
 void CDecompressJPEG2000::SetInFileName(CString strInFilename)
 {
-	m_strInFileName = strInFilename;
+	m_strInputCompressedFileName = strInFilename;
 }
 
 void CDecompressJPEG2000::SetImageViewer(CImageViewer* pImageView)
@@ -29,7 +29,7 @@ void CDecompressJPEG2000::SetImageViewer(CImageViewer* pImageView)
 
 BOOL CDecompressJPEG2000::DoDecompress(INT_PTR nStartLayerNum, INT_PTR nEndLayerNum)
 {
-	if (m_strInFileName.IsEmpty())
+	if (m_strInputCompressedFileName.IsEmpty())
 		return FALSE;
 
 	opj_decompress_parameters parameters;           /* decompression parameters */
@@ -39,7 +39,7 @@ BOOL CDecompressJPEG2000::DoDecompress(INT_PTR nStartLayerNum, INT_PTR nEndLayer
 	opj_codestream_index_t* cstr_index = NULL;
 	opj_codestream_info_v2_t* cstr_info = NULL;
 
-	img_fol_t img_fol;
+	J2K_IMAGE_DIR img_fol;
 	dircnt_t *dirptr = NULL;
 	int failed = 0;
 	OPJ_UINT32 numDecompressedImages = 0;
@@ -49,16 +49,16 @@ BOOL CDecompressJPEG2000::DoDecompress(INT_PTR nStartLayerNum, INT_PTR nEndLayer
 	set_default_parameters(&parameters);
 
 	/* Initialize img_fol */
-	memset(&img_fol, 0, sizeof(img_fol_t));
+	memset(&img_fol, 0, sizeof(J2K_IMAGE_DIR));
 
 	if (ParseDecodingOption(&parameters, &img_fol) != 1) {
 		failed = 1;
 		goto fin;
 	}
 
-	parameters.decod_format = infile_format((CStringA)m_strInFileName);
+	parameters.decod_format = infile_format((CStringA)m_strInputCompressedFileName);
 
-	if (IsValidInputFileType(m_strInFileName, &parameters) == FALSE)
+	if (IsValidInputFileType(m_strInputCompressedFileName, &parameters) == FALSE)
 		return FALSE;
 
 	cp_reduce = parameters.core.cp_reduce;
@@ -448,7 +448,7 @@ fin:
 	return TRUE;
 }
 
-INT_PTR CDecompressJPEG2000::ParseDecodingOption(opj_decompress_parameters *parameters, img_fol_t *img_fol)
+INT_PTR CDecompressJPEG2000::ParseDecodingOption(opj_decompress_parameters *parameters, J2K_IMAGE_DIR *img_fol)
 {
 	/* parse the command line */
 	int totlen, c;
@@ -512,7 +512,7 @@ BOOL CDecompressJPEG2000::IsValidInputFileType(CString strFileName, opj_decompre
 	return TRUE;
 }
 
-BOOL CDecompressJPEG2000::SetOutFileType(CString strFileName, opj_decompress_parameters *parameters, img_fol_t *img_fol)
+BOOL CDecompressJPEG2000::SetOutFileType(CString strFileName, opj_decompress_parameters *parameters, J2K_IMAGE_DIR *img_fol)
 {
 	parameters->cod_format = get_file_format((CStringA)strFileName);
 

@@ -17,6 +17,7 @@ CImageViewer::CImageViewer(INT_PTR nIndexViewer, HWND hWndView)
 	m_pCursorWnd->CreateCtrl(pWnd);
 
 	m_fDecodeTime = 0.0;
+	m_bIsShowCurrentPosition = FALSE;
 }
 
 
@@ -95,6 +96,19 @@ void CImageViewer::SetCurImagePos(CPoint ptImgPos)
 	m_pCursorWnd->SetHangOn(TRUE);
 
 	UpdateViewer();
+}
+
+void CImageViewer::SetShowPixelWnd(BOOL bShow)
+{
+	m_bIsShowCurrentPosition = bShow;
+
+	if (!bShow)
+	{
+		if (m_pCursorWnd)
+		{
+			m_pCursorWnd->HidePopupMsg();
+		}
+	}
 }
 
 void CImageViewer::SetOldMousePosBeforePan(CPoint ptOldPoint)
@@ -223,6 +237,11 @@ WORD CImageViewer::GetInImagePixelValue(CPoint ptImagePos)
 	return wRes;
 }
 
+double CImageViewer::GetZoomRatio()
+{
+	return m_dZoomValue;
+}
+
 BOOL CImageViewer::IsPosPopupWndVisible()
 {
 	BOOL bRes = FALSE;
@@ -299,7 +318,7 @@ void CImageViewer::UpdateCurMousePosPixelData()
 {
 	CPoint ptClientPos;
 	CPoint ptScreenPos;
-
+	
 	if (!m_pCursorWnd->GetHangOn())
 	{
 		::GetCursorPos(&ptClientPos);
@@ -309,6 +328,12 @@ void CImageViewer::UpdateCurMousePosPixelData()
 	else
 	{
 		ptClientPos = ConvertImage2ScreenCoordinate(m_ptPixelDataPos);
+	}
+
+	if (!m_bIsShowCurrentPosition)
+	{
+		m_pCursorWnd->HidePopupMsg();
+		return;
 	}
 
 	if (!m_rtCanvas.PtInRect(ptClientPos))

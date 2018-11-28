@@ -39,6 +39,8 @@ protected:
 
 	CPixelDataPopupWnd* m_pCursorWnd;
 
+	BOOL m_bIsShowCurrentPosition;
+
 private:
 	INT_PTR m_nIndexViewer;
 	HWND m_hParentWnd;
@@ -55,6 +57,7 @@ public:
 	void SetDecodingTime(float fDecodeTime);
 	void SetOldMousePosBeforePan(CPoint ptOldPoint);
 	void SetCurImagePos(CPoint ptImgPos);
+	void SetShowPixelWnd(BOOL bShow);
 
 	// Get
 	CString GetCompressedFileName();
@@ -69,6 +72,7 @@ public:
 	CPoint GetCurImagePos();
 	BYTE GetOutImagePixelValue(CPoint ptImagePos);
 	WORD GetInImagePixelValue(CPoint ptImagePos);
+	double GetZoomRatio();
 
 	BOOL IsPosPopupWndVisible();
 

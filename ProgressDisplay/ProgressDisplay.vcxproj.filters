@@ -96,6 +96,12 @@
     <ClInclude Include="PixelDataPopupWnd.h">
       <Filter>DisplayUtill</Filter>
     </ClInclude>
+    <ClInclude Include="CompressJPEG2000.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyJ2KTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ProgressDisplay.cpp">
@@ -151,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="PixelDataPopupWnd.cpp">
       <Filter>DisplayUtill</Filter>
+    </ClCompile>
+    <ClCompile Include="CompressJPEG2000.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

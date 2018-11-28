@@ -45,6 +45,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnDropFiles(HDROP hDropInfo);
+	afx_msg void OnMove(int x, int y);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
 };
 
 

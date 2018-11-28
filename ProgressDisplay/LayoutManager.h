@@ -32,6 +32,7 @@ public:
 	void SetEqualImagePos(INT_PTR nIndexStandardViewer);
 
 	void ManageCurrentPos(CPoint ptCurPos);
+	void DestroyCurrentPosWnd();
 
 	void RecalcLayout();
 

@@ -89,6 +89,49 @@ DIBINFO* CProgressDisplayView::GetDibInfo()
 	return &m_DibInfo;
 }
 
+void CProgressDisplayView::DrawZoomInfo(CDC* pDC, INT_PTR nViewerIndex)
+{
+	if (!pDC)
+		return;
+
+	if (nViewerIndex < 0)
+		return;
+
+	INT_PTR nLeftMargin = 3;
+	INT_PTR nBottomMargin = 20;
+	INT_PTR nSpace = 1;
+	COLORREF crTextColor = RGB(170, 90, 0);
+
+	INT_PTR nFontSize = 85;
+	CFont font;
+
+	font.CreateFont(12, 0, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
+
+	CImageViewer* pImageViewer = m_pLayoutManager->GetImageViewer(nViewerIndex);
+
+	if (pImageViewer == nullptr)
+		return;
+
+	CRect rtDrawCanvas = pImageViewer->GetCanvasRect();
+	double dZoomRatio = pImageViewer->GetZoomRatio();
+
+	CFont* pOldFont = pDC->SelectObject(&font);
+
+	INT_PTR nPosX = rtDrawCanvas.left + nLeftMargin;
+	INT_PTR nPosY = rtDrawCanvas.bottom - nBottomMargin;
+
+	CString strZoomRatio;
+	strZoomRatio.Format(_T("Zoom Ratio : %.2f (%%)"),dZoomRatio);
+
+	pDC->SetTextColor(crTextColor);
+	pDC->TextOut(nPosX, nPosY, strZoomRatio);
+
+	pDC->SelectObject(pOldFont);
+
+	return;
+}
+
 BOOL CProgressDisplayView::IsJpeg2000Format(CString strFileName)
 {
 	BOOL bRes = FALSE;
@@ -105,6 +148,13 @@ BOOL CProgressDisplayView::IsJpeg2000Format(CString strFileName)
 
 	return bRes;
 
+}
+
+void CProgressDisplayView::RedrawWnd()
+{
+
+
+	Invalidate(FALSE);
 }
 
 void CProgressDisplayView::OpenJpegFile(CStringArray* pFilePathArray)
@@ -134,6 +184,8 @@ void CProgressDisplayView::OpenJpegFile(CStringArray* pFilePathArray)
 			continue;
 
 		pImageViewer = m_pLayoutManager->GetImageViewer(nImageViewerIndex);
+
+		pImageViewer->SetShowPixelWnd(m_bIsShowCurrentPosition);
 		
 		pDecompJPEG2000->SetImageViewer(pImageViewer);
 
@@ -372,6 +424,8 @@ void CProgressDisplayView::OnDraw(CDC* pDC)
 	GetClientRect(&rtCanvas);
 	pDC->FillSolidRect(rtCanvas, RGB(255, 255, 255));
 
+	m_pLayoutManager->SetTotalCanvasRect(rtCanvas);
+
 	CImageViewer* pImageViewer = nullptr;
 	IMAGE_INFO* infoDrawImage = nullptr;
 	void* pDrawImageData = nullptr;
@@ -457,6 +511,8 @@ void CProgressDisplayView::OnDraw(CDC* pDC)
 			(BITMAPINFO*)GetDibInfo(),
 			DIB_RGB_COLORS,
 			SRCCOPY);
+
+		DrawZoomInfo(pDC, iViewer);
 	}
 
 	dcMem.SelectObject(pOldBitmap);
@@ -580,13 +636,14 @@ void CProgressDisplayView::OnMouseMove(UINT nFlags, CPoint point)
 	SetOperationModeByKey(bIsShiftKeyPressed, bIsCtrlKeyPressed, bIsAltKeyPressed, bIsLButtonPressed, bIsRButtonPressed);
 	OnSetCursor(NULL, 0, 0);
 
-	if (!m_bIsShowCurrentPosition)
-		return;
-
 	if (!m_pLayoutManager)
 		return;
 
-
+	if (!m_bIsShowCurrentPosition)
+	{
+		
+		return;
+	}
 
 	switch (m_nOperationMode)
 	{
@@ -755,6 +812,13 @@ void CProgressDisplayView::OnViewShowCurrentPosition()
 	else
 	{
 		m_bIsShowCurrentPosition = TRUE;
+	}
+
+	CImageViewer* pImageViewer = nullptr;
+	for (INT_PTR iViewer = 0; iViewer < m_pLayoutManager->GetImageViewerCount(); iViewer++)
+	{
+		pImageViewer = m_pLayoutManager->GetImageViewer(iViewer);
+		pImageViewer->SetShowPixelWnd(m_bIsShowCurrentPosition);
 	}
 }
 

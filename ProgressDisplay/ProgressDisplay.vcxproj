@@ -92,6 +92,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;..\include\openjp2;..\include\common;..\include\jp2;..\include\jpwl;..\include\mj2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -204,6 +205,8 @@
     <ClInclude Include="..\include\common\opj_getopt.h" />
     <ClInclude Include="..\include\common\opj_string.h" />
     <ClInclude Include="..\include\jp2\convert.h" />
+    <ClInclude Include="CompressJPEG2000.h" />
+    <ClInclude Include="MyJ2KTypes.h" />
     <ClInclude Include="PixelDataPopupWnd.h" />
     <ClInclude Include="DecompressJPEG2000.h" />
     <ClInclude Include="ImageConverter.h" />
@@ -239,6 +242,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="CompressJPEG2000.cpp" />
     <ClCompile Include="PixelDataPopupWnd.cpp" />
     <ClCompile Include="DecompressJPEG2000.cpp" />
     <ClCompile Include="ImageConverter.cpp" />

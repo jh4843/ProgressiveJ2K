@@ -20,6 +20,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
 	ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
 	ON_WM_DROPFILES()
+	ON_WM_MOVE()
+	ON_WM_SIZE()
+	ON_WM_SIZING()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -175,4 +178,31 @@ void CMainFrame::OnDropFiles(HDROP hDropInfo)
 	// TODO: Add your message handler code here and/or call default
 
 	CFrameWndEx::OnDropFiles(hDropInfo);
+}
+
+
+void CMainFrame::OnMove(int x, int y)
+{
+	CFrameWndEx::OnMove(x, y);
+
+	theApp.GetProgView()->RedrawWnd();
+	// TODO: Add your message handler code here
+}
+
+
+void CMainFrame::OnSize(UINT nType, int cx, int cy)
+{
+	CFrameWndEx::OnSize(nType, cx, cy);
+
+	Invalidate(FALSE);
+
+	// TODO: Add your message handler code here
+}
+
+
+void CMainFrame::OnSizing(UINT fwSide, LPRECT pRect)
+{
+	CFrameWndEx::OnSizing(fwSide, pRect);
+
+	// TODO: Add your message handler code here
 }
